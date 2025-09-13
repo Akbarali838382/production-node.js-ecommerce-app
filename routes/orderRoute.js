@@ -1,6 +1,6 @@
 import express from 'express'
 import { isAuth } from '../middlewares/authMiddleware.js';
-import { createOrderConrtroller, getMyOrdersController, getSingleOrderController, paymentController } from '../controllers/orderController.js';
+import { createOrderController, getMyOrdersController, getSingleOrderController, paymentController } from '../controllers/orderController.js';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 // ************order ROUTE**********
 
 // Create order
-router.post('/create',isAuth,createOrderConrtroller);
+router.post('/create',isAuth,createOrderController);
 
 // get all order
 router.get('/my-orders',isAuth,getMyOrdersController);

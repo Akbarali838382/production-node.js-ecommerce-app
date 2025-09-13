@@ -5,6 +5,7 @@ const categorySchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true,'category is require'],
+       unique: true,
     },
 },
   { timestamps: true }

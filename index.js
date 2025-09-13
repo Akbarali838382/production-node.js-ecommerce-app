@@ -46,8 +46,8 @@ import orderRoute from "./routes/orderRoute.js";
 app.use("/api/v1", testRoute);
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
-app.use("/api/v1/cat", categoryRoute);
-app.use("/api/v1/order", orderRoute);
+app.use("/api/v1/category", categoryRoute);
+app.use("/api/v1/orders", orderRoute);
 // app.use("/api/v1/admin", adminRoute);
 
 app.get("/", (req, res) => {

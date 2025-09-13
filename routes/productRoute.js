@@ -12,7 +12,7 @@ import {
 } from "../controllers/productController.js";
 import { SingleUpload } from "../middlewares/multer.js";
 
-const router = express();
+const router = express.Router();
 
 // routes
 // get all product
@@ -25,7 +25,7 @@ router.get("/top", getTopProductController);
 router.get("/:id", getSingleProduct);
 
 // get single product
-router.post("/create", isAuth, SingleUpload, createProductController);
+router.post("/create",  SingleUpload, createProductController);
 
 // update Product
 router.put("/:id", isAuth, SingleUpload, updateProductController);

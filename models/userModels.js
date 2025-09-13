@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "password is require"],
-      minLength: [12, "password should be 7 character"],
+      minLength: [7, "password should be 7 character"],
     },
     profilePic: {
       public_id: {
@@ -27,19 +27,23 @@ const userSchema = new mongoose.Schema(
       },
     },
     phone: {
-      type: Number,
+      type: String,
     },
+    answer: { type: String }, // Existing field for security question
+  resetPasswordOTP: { type: String }, // Store OTP
+  resetPasswordExpires: { type: Date },
   
   },
   { timestamps: true }
 );
 
 // function
-// hash password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
+
 
 // compare function
 userSchema.methods.comparePassword = async function (plainPassword) {

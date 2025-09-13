@@ -8,7 +8,7 @@ const router = express.Router();
 // ************CAT ROUTE**********
 
 // Create Category
-router.post('/create',isAuth,createCategoryController);
+router.post('/create',createCategoryController);
 
 // get all Category
 router.get('/get-all',getAllCategoryController);

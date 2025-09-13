@@ -1,86 +1,26 @@
 import mongoose from "mongoose";
 
-const orderSchema = new mongoose.Schema(
-  {
-    shippingInfo: {
-      address: {
-        type: String,
-        require: [true, "address is required"],
-      },
-      city: {
-        type: String,
-        require: [true, "city name is required"],
-      },
-      country: {
-        type: String,
-        require: [true, "country name is required"],
-      },
+const orderSchema = new mongoose.Schema({
+  cartItems: [
+    {
+      product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      name: String,
+      price: Number,
+      quantity: Number,
+      image: String,
     },
-    "orderItems": [
-      {
-        name: {
-          type: String,
-          require: [true, "product name is required"],
-        },
-        price: {
-          type: Number,
-          require: [true, "product price is required"],
-        },
-        quantity: {
-          type: Number,
-          require: [true, "product quantity is required"],
-        },
-        image: {
-          type: String,
-          require: [true, "product images is required"],
-          required: true,
-        },
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-        },
-      },
-    ],
-    paymentMethod:{
-        type:String,
-        enum:["COD","ONLINE"],
-        default:"COD"
-    },
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Users',
-        required:true
-    },
-    paidAt:Date,
-    paymentInfo:{
-        id:String,
-        status:String,
-    },
-    itemPrice:{
-        type:Number,
-        required:[true,'Item Price is Required']
-    },
-    tax:{
-        type:Number,
-        required:[true,'tax Price is Required']
-    },
-    shippingCharges:{
-        type:Number,
-        required:[true,'Item shippingCharges is Required']
-    },
-    totalAmount:{
-        type:Number,
-        required:[true,'Item totalAmount Price is Required']
-    },
-    orderStatus:{
-        type:String,
-        enum:['processing','shipped','deliverd'],
-        default:'processing'
-    },
-    deliverdAt:Date
+  ],
+  totalPrice: { type: Number, required: true },
+  shippingAddress: {
+    address: String,
+    city: String,
+    country: String,
   },
-  { timestamps: true }
-);
+  paymentMethod: { type: String, enum: ["COD", "ONLINE"], default: "COD" },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "Users", required: true },
+  status: { type: String, default: "Pending" },
+}, { timestamps: true });
+
 
 export const orderModal = mongoose.model("orders", orderSchema);
 export default orderModal;

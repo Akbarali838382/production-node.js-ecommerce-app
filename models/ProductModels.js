@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 // review modal
 const reviewSchema = new mongoose.Schema({
@@ -26,6 +27,11 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "product name is require"],
+    },
+     slug: {
+      type: String,
+      unique: true, 
+      lowercase: true,
     },
     description: {
       type: String,
@@ -70,6 +76,16 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+// ✅ Middleware: automatically generate slug from name before saving
+productSchema.pre("save", function (next) {
+  if (this.isModified("name")) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
+  next();
+});
+
 
 export const productModel = mongoose.model("Product", productSchema);
 export default productModel;

@@ -1,22 +1,29 @@
 import productModel from "../models/ProductModels.js";
 import cloudinary from "cloudinary";
 import { getDataUri } from "../utils/features.js";
+import slugify from "slugify";
 
-// get all product
 export const getAllProductController = async (req, res) => {
-  const {keyword,category} =  req.query;
+  const { keyword, category } = req.query;
   try {
-    const products = await productModel.find({
-      name:{
-        $regex:keyword ? keyword : '',
-        $options:'i',
-      },
-      category:category?category:undefined,
-    }).populate('category');
+    let query = {};
+
+    // keyword filter
+    if (keyword) {
+      query.name = { $regex: keyword, $options: 'i' };
+    }
+
+    // category filter
+    if (category) {
+      query.category = category;
+    }
+
+    const products = await productModel.find(query).populate('category');
+
     res.status(200).send({
       success: true,
       message: "all product fetch successfully",
-      totalProducts:products.length,
+      totalProducts: products.length,
       products,
     });
   } catch (error) {
@@ -28,6 +35,7 @@ export const getAllProductController = async (req, res) => {
     });
   }
 };
+
 
 // get top product  
 export const getTopProductController = async (req,res) => {
@@ -81,58 +89,58 @@ export const getSingleProduct = async (req, res) => {
   }
 };
 
-// create Product
-export const createProductController = async (req, res) => {
-  try {
-    const { name, description, price, discount, stock, category, quantity } =
-      req.body;
-    // validation
-    if (!name || !description || !price || !stock || !quantity) {
-      return req.status(500).send({
+  // create Product
+  export const createProductController = async (req, res) => {
+    try {
+      const { name, description, price, discount, stock, category, quantity } =
+        req.body;
+      // validation
+      if (!name || !description || !price || !stock || !quantity) {
+        return req.status(500).send({
+          success: false,
+          message: "please provide all filled",
+        });
+      }
+
+      // file validation
+      if (!req.file) {
+        return res.status(500).send({
+          success: false,
+          message: "please provide product images",
+        });
+      }
+
+      const file = getDataUri(req.file);
+      const cdb = await cloudinary.v2.uploader.upload(file.content);
+      const image = {
+        public_id: cdb.public_id,
+        url: cdb.secure_url,
+      };
+
+      await productModel.create({
+        name,
+        description,
+        price,
+        discount,
+        stock,
+        category,
+        quantity,
+        images: [image],
+      });
+
+      res.status(201).send({
+        success: true,
+        message: "product create successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
         success: false,
-        message: "please provide all filled",
+        message: "error in single product api",
+        error,
       });
     }
-
-    // file validation
-    if (!req.file) {
-      return res.status(500).send({
-        success: false,
-        message: "please provide product images",
-      });
-    }
-
-    const file = getDataUri(req.file);
-    const cdb = await cloudinary.v2.uploader.upload(file.content);
-    const image = {
-      public_id: cdb.public_id,
-      url: cdb.secure_url,
-    };
-
-    await productModel.create({
-      name,
-      description,
-      price,
-      discount,
-      stock,
-      category,
-      quantity,
-      images: [image],
-    });
-
-    res.status(201).send({
-      success: true,
-      message: "product create successfully",
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "error in single product api",
-      error,
-    });
-  }
-};
+  };
 
 export const updateProductController = async (req, res) => {
   try {
@@ -147,14 +155,19 @@ export const updateProductController = async (req, res) => {
     const { name, description, price, discount, stock, category, quantity } =
       req.body;
 
+      if (typeof name !== "undefined") {
+  product.name = name;
+  product.slug = slugify(name, { lower: true, strict: true });
+}
+
     if (typeof name !== "undefined") product.name = name;
     if (typeof description !== "undefined") product.description = description;
-    if (typeof price !== "undefined") product.price = price;
-    if (typeof discount !== "undefined") product.discount = discount;
-    if (typeof stock !== "undefined") product.stock = stock;
+    if (typeof price !== "undefined") product.price = Number(price);
+    if (typeof discount !== "undefined") product.discount = Number(discount);
+    if (typeof stock !== "undefined") product.stock = Number(stock);
     if (typeof category !== "undefined") product.category = category;
-    if (typeof quantity !== "undefined") product.quantity = quantity;
-
+    if (typeof quantity !== "undefined") product.quantity = Number(quantity);
+    
     // Optional: handle image update
     if (req.file) {
       const file = getDataUri(req.file);
