@@ -32,28 +32,18 @@ export const registerController = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Validation
     if (!name || !email || !password) {
-      return res.status(400).send({
-        success: false,
-        message: "Please provide all fields",
-      });
+      return res.status(400).send({ success: false, message: "Please provide all fields" });
     }
 
-    // Check existing user
     const existingUser = await userModal.findOne({ email });
     if (existingUser) {
-      return res.status(400).send({
-        success: false,
-        message: "Email already taken",
-      });
+      return res.status(400).send({ success: false, message: "Email already taken" });
     }
 
-    // Create user
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await userModal.create({ name, email, password:hashedPassword });
+    // Let pre-save hook hash the password
+    const user = await userModal.create({ name, email, password });
 
-    // Generate token
     const token = user.generateToken();
 
     res.status(201).send({
@@ -63,60 +53,69 @@ export const registerController = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("Register API Error:", error.stack); // Log full stack trace
+    console.error("Register API Error:", error.stack);
     res.status(500).send({
       success: false,
       message: "Error in Register API",
-      error: error.message, // Send error message to client for debugging
+      error: error.message,
     });
   }
 };
 
 
+
 // login
 export const loginController = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    // Trim email and password to remove extra spaces
+    email = email?.trim();
+    password = password?.trim();
+
     // validation
     if (!email || !password) {
-      return res.status(500).send({
+      return res.status(400).send({
         success: false,
         message: "Please add email or password",
       });
     }
+
     // check user
     const user = await userModal.findOne({ email });
 
-    // user validation
     if (!user) {
       return res.status(404).send({
         success: false,
-        message: "User Not Found",
+        message: "User not found",
       });
     }
+
     // check password
     const isMatch = await user.comparePassword(password);
-    // validation
+
     if (!isMatch) {
-      return res.status(500).send({
+      return res.status(400).send({
         success: false,
-        message: "invaild creadentails",
+        message: "Invalid credentials",
       });
     }
-    // token
+
+    // generate token
     const token = user.generateToken();
 
+    // set cookie
     res
       .status(200)
       .cookie("token", token, {
-        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-        secure: process.env.NODE_ENV === "development" ? true : false,
-        httpOnly: process.env.NODE_ENV === "development" ? true : false,
-        sameSite: process.env.NODE_ENV === "development" ? true : false,
+        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+        secure: process.env.NODE_ENV === "production", // only secure in prod
+        httpOnly: true, // always httpOnly
+        sameSite: "lax",
       })
       .send({
         success: true,
-        message: "Login Successfully",
+        message: "Login successful",
         token,
         user,
       });
@@ -124,11 +123,12 @@ export const loginController = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error  in Login Api",
-      error,
+      message: "Error in Login API",
+      error: error.message,
     });
   }
 };
+
 
 // Get user Profile
 export const getUserProfileController = async (req, res) => {
