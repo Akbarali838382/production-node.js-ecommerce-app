@@ -11,9 +11,7 @@ import bcrypt from "bcryptjs";
 
 // create transporter directly
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // true for port 465
+  service: "gmail",
   auth: {
     user:"akbarali63553745@gmail.com",
     pass:"zreytrkwsafdzrjp",
