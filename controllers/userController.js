@@ -11,13 +11,14 @@ import bcrypt from "bcryptjs";
 
 // create transporter directly
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // true for port 465
   auth: {
-    user: "akbarali63553745@gmail.com", // your Gmail
-    pass: "rivkbtsdvoyhvxqc", // your Gmail App Password
+    user:"akbarali63553745@gmail.com",
+    pass:"zreytrkwsafdzrjp",
   },
 });
-
 // test the connection
 transporter.verify((error, success) => {
   if (error) {
@@ -213,51 +214,42 @@ export const updateUserPassword = async (req, res) => {
 };
 
 
+// Password reset - Send OTP
 export const passwordResetController = async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
-      return res.status(400).send({
-        success: false,
-        message: "Please provide email",
-      });
+      return res
+        .status(400)
+        .send({ success: false, message: "Please provide email" });
     }
 
     const user = await userModal.findOne({ email });
     if (!user) {
-      return res.status(404).send({
-        success: false,
-        message: "User not found",
-      });
+      return res.status(404).send({ success: false, message: "User not found" });
     }
 
-    // Generate OTP
+    // ✅ FIXED: Generate OTP
     const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     user.resetPasswordOTP = otp;
     user.resetPasswordExpires = otpExpires;
     await user.save();
 
-    // 🔍 Debug your env variables here
     console.log("📧 EMAIL_USER:", process.env.EMAIL_USER);
-    console.log(
-      "📧 EMAIL_PASS:",
-      process.env.EMAIL_PASS ? "Loaded" : "❌ Missing"
-    );
+    console.log("📧 EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded" : "❌ Missing");
 
-    // Send email
     await transporter.sendMail({
-      from: `"NexiCart" <${process.env.EMAIL_USER}>`,
+      from: `"NexiCart" <akbarali63553745@gmail.com>`,
       to: email,
       subject: "Password Reset OTP",
       text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`,
     });
 
-    res.status(200).send({
-      success: true,
-      message: "OTP sent to your email",
-    });
+    res
+      .status(200)
+      .send({ success: true, message: "OTP sent to your email" });
   } catch (error) {
     console.error("Error in passwordResetController:", error.stack);
     res.status(500).send({
@@ -283,7 +275,7 @@ export const verifyOTPController = async (req, res) => {
     if (
       !user ||
       user.resetPasswordOTP !== otp ||
-      user.resetPasswordExpires < Date.now()
+     user.resetPasswordExpires.getTime() < Date.now()
     ) {
       return res.status(400).send({
         success: false,
