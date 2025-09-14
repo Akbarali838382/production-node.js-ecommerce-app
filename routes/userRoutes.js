@@ -3,14 +3,14 @@ import {
   getUserProfileController,
   loginController,
   logoutController,
-  passwordResetController,
   registerController,
   updateProfileController,
   updateProfilePicController,
   updateUserPassword,
   updatePasswordAfterResetController,
   verifyOTPController,
-  deleteProfilePicController
+  deleteProfilePicController,
+  passwordResetController
 } from "../controllers/userController.js";
 import { isAuth } from "../middlewares/authMiddleware.js";
 import { SingleUpload } from "../middlewares/multer.js";
