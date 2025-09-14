@@ -10,7 +10,8 @@ import {
   updatePasswordAfterResetController,
   verifyOTPController,
   deleteProfilePicController,
-  passwordResetController
+  passwordResetController,
+  
 } from "../controllers/userController.js";
 import { isAuth } from "../middlewares/authMiddleware.js";
 import { SingleUpload } from "../middlewares/multer.js";
