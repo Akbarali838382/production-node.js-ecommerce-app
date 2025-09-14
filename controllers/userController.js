@@ -11,10 +11,12 @@ import bcrypt from "bcryptjs";
 
 // create transporter directly
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // use SSL
   auth: {
-    user:"akbarali63553745@gmail.com",
-    pass:"zreytrkwsafdzrjp",
+    user: process.env.EMAIL_USER, // Gmail address
+    pass: process.env.EMAIL_PASS, // App Password
   },
 });
 // test the connection
